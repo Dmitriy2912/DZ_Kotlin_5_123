@@ -3,6 +3,8 @@ import org.junit.Test
 
 import ru.netology.Post
 import ru.netology.WallService
+import kotlin.test.assertFails
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
@@ -47,8 +49,28 @@ class WallServiceTest {
         )
         val result = WallService.update(updatedPost)
         assertTrue(result)
-
     }
+    @Test
+    fun updateNotExisting(){
+        val fakePost = Post(
+            999,
+            300,
+            300,
+            300,
+            "bbb",
+            true,
+            true,
+            true,
+            true,
+            "bbb"
+        )
+        val result = WallService.update(fakePost)
+        assertFalse (result)
+
+        
+    }
+
+
 }
 
 
