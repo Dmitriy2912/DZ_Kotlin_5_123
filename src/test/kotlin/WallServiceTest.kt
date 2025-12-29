@@ -1,12 +1,9 @@
 import org.junit.Before
 import org.junit.Test
-
-import ru.netology.Post
-import ru.netology.WallService
-import kotlin.test.assertFails
+import ru.netology.Attachment.Post
+import ru.netology.Attachment.WallService
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-
 
 
 class WallServiceTest {
@@ -18,7 +15,7 @@ class WallServiceTest {
     @Test
     fun add () {
         val post = Post(1,1,1,1,
-            "a", true, true,true,
+            "a", 1, true,true,
             true, "a")
 
         val savedPost = WallService.add(post)
@@ -34,7 +31,7 @@ class WallServiceTest {
             1,
             1,
             "a",
-            true,true,true,true,
+            1,true,true,true,
             "a"
         )
         val savedPost = WallService.add(originalPost)
@@ -44,7 +41,7 @@ class WallServiceTest {
             1,
             1,
             "AA",
-            true,true,true,true,
+            1,true,true,true,
             "aaa"
         )
         val result = WallService.update(updatedPost)
@@ -58,7 +55,7 @@ class WallServiceTest {
             300,
             300,
             "bbb",
-            true,
+            1,
             true,
             true,
             true,
@@ -67,7 +64,7 @@ class WallServiceTest {
         val result = WallService.update(fakePost)
         assertFalse (result)
 
-        
+
     }
 
 
