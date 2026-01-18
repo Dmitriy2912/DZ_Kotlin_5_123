@@ -1,28 +1,49 @@
 import org.junit.Before
 import org.junit.Test
+import ru.netology.Attachment
 import ru.netology.Attachment.Post
 import ru.netology.Attachment.WallService
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import ru.netology.Attachment.Comment
+import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 
 class WallServiceTest {
+    private val wallService = Attachment.WallServiceTo()
 
     @Before
     fun clearBeforeTest() {
         WallService.clear()
     }
     @Test
-    fun add () {
-        val post = Post(1,1,1,1,
-            "a", 1, true,true,
-            true, "a")
+    fun add() {
+        val post = Post(
+            1, 1, 1, 1,
+            "a", 1, true, true,
+            true, "a"
+        )
 
-        val savedPost = WallService.add(post)
+            //val savedPost =
+            WallService.add(post)
+        //assertTrue(savedPost.id > 0)
+        val comment = Comment(
+            1,
+            1,
+            1,
+            "AAA",
+            0
+        )
+        val addedComment = wallService.createComment(1, comment)
 
-         assertTrue (savedPost.id > 0)
+        assertEquals(1, addedComment.id)
+        assertEquals(1,addedComment.postId)
+        assertEquals(1, addedComment.fromId)
+        assertEquals("AAA", addedComment.text)
+        assertTrue (addedComment.date > 0)
+
     }
-
     @Test
     fun updateExisting() {
         val originalPost = Post(
@@ -63,11 +84,30 @@ class WallServiceTest {
         )
         val result = WallService.update(fakePost)
         assertFalse (result)
+    }
 
-
+    @Test
+    fun  updateNotExisting1(){
+        val comment = Comment(
+            11,
+            11,
+            11,
+            "ADC",
+            1
+        )
+        assertFails {
+            wallService.createComment(11, comment)
+        }
     }
 
 
+
+
+
+
+
 }
+
+
 
 

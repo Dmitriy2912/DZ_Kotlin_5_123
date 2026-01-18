@@ -1,5 +1,8 @@
 package ru.netology
 
+
+
+
 interface Attachment {
 
     val type: String
@@ -57,6 +60,38 @@ interface Attachment {
         val photo100: String? = null,
         val photo130: String? = null
     )
+    data class Comment(
+        val id: Int,
+        val postId: Int,
+        val fromId: Int,
+        val text: String,
+        val date: Int,
+        val replyToComment: Int? = null,
+        val attachment: List<Attachment>? = null
+    )
+    class PostNoFoundException(postId: Int):
+    RuntimeException("Post s ID=$postId ne nauden")
+
+    class WallServiceTo{
+        private var post = emptyArray<Post>()
+        private var comment = emptyArray<Comment>()
+        private var nextCommentId = 1
+
+        fun createComment(postId: Int, comment: Comment): Comment{
+            val post = post.find{ it.id == postId} ?:
+            throw PostNoFoundException(postId)
+
+            val newComment = comment.copy(id = nextCommentId++,
+                postId = postId,
+                date = (System.currentTimeMillis() / 1000).toInt()
+            )
+
+            return newComment
+        }
+    }
+
+
+
 
     data class Audio(
         val id: Int,
@@ -67,6 +102,7 @@ interface Attachment {
         val url: String? = null,
         val lyricsId: Int? = null
     )
+
 
     data class PhotoAttachment(
         override val type: String = "photo",
@@ -121,15 +157,33 @@ interface Attachment {
     }
 
     fun main() {
+        val wallService = WallServiceTo()
+
         val post = Post(
             1, 1, 1, 1, "a", 1,
             true, true, true, "A",
         )
+        val comment = Comment(0,1,1,"AAA", 0,null, null)
+
+        try { val addedComment = wallService.createComment(1, comment)
+            println("addedComment: $addedComment")
+        }catch (e: PostNoFoundException){
+            println(e.message)
+        }
+
+
+
+
+
+
+
         val photo = Photo(1, 100, "https://vk.com/photo1_130.jpg", "https://vk.com/photo1_604.jpg")
         val video = Video(2, 100, "Моё видео", 180)
         val document = Document(3, "Документ.pdf", 1024000, "pdf", "https://vk.com/doc3.pdf")
         val link = Link("https://example.com", "Пример сайта")
         val audio = Audio(4, 100, "Исполнитель", "Трек", 240)
+
+
 
         val attachments = listOf(
             PhotoAttachment(photo = photo),
@@ -151,6 +205,9 @@ interface Attachment {
                 is AudioAttachment -> println("Аудио: ${attachment.audio.artist} — ${attachment.audio.title}")
             }
         }
+
+
+
 
 
 
