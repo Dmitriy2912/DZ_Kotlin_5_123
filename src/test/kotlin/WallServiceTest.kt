@@ -6,27 +6,29 @@ import ru.netology.Attachment.WallService
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import ru.netology.Attachment.Comment
+import ru.netology.Attachment.WallService.createComment
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 
+
+
 class WallServiceTest {
-    private val wallService = Attachment.WallServiceTo()
+
 
     @Before
     fun clearBeforeTest() {
         WallService.clear()
     }
     @Test
-    fun add() {
-        val post = Post(
-            1, 1, 1, 1,
-            "a", 1, true, true,
-            true, "a"
-        )
+    fun add() {val post = Post(
+        1, 1, 1, 1,
+        "a", 1, true, true,
+        true, "a"
+    )
 
-            //val savedPost =
-            WallService.add(post)
+        //val savedPost =
+        WallService.add(post)
         //assertTrue(savedPost.id > 0)
         val comment = Comment(
             1,
@@ -35,15 +37,16 @@ class WallServiceTest {
             "AAA",
             0
         )
-        val addedComment = wallService.createComment(1, comment)
+        val addedComment = createComment(1, comment)
 
         assertEquals(1, addedComment.id)
         assertEquals(1,addedComment.postId)
         assertEquals(1, addedComment.fromId)
         assertEquals("AAA", addedComment.text)
         assertTrue (addedComment.date > 0)
-
     }
+
+
     @Test
     fun updateExisting() {
         val originalPost = Post(
@@ -96,7 +99,7 @@ class WallServiceTest {
             1
         )
         assertFails {
-            wallService.createComment(11, comment)
+            createComment(11, comment)
         }
     }
 
@@ -107,7 +110,6 @@ class WallServiceTest {
 
 
 }
-
 
 
 

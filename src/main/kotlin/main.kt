@@ -1,6 +1,8 @@
 package ru.netology
 
-
+import ru.netology.Attachment.Comment
+import ru.netology.Attachment.Post
+import ru.netology.Attachment.WallService.createComment
 
 
 interface Attachment {
@@ -72,23 +74,25 @@ interface Attachment {
     class PostNoFoundException(postId: Int):
     RuntimeException("Post s ID=$postId ne nauden")
 
-    class WallServiceTo{
-        private var post = emptyArray<Post>()
-        private var comment = emptyArray<Comment>()
-        private var nextCommentId = 1
-
-        fun createComment(postId: Int, comment: Comment): Comment{
-            val post = post.find{ it.id == postId} ?:
-            throw PostNoFoundException(postId)
-
-            val newComment = comment.copy(id = nextCommentId++,
-                postId = postId,
-                date = (System.currentTimeMillis() / 1000).toInt()
-            )
-
-            return newComment
-        }
-    }
+//    class WallServiceTo{
+//        private var post = emptyArray<Post>()
+//        private var comment = emptyArray<Comment>()
+//        private var nextCommentId = 1
+//
+////            fun createComment(postId: Int, comment: Comment): Comment {
+////            val post = post.find{ it.id == postId} ?:
+////            throw PostNoFoundException(postId)
+////
+////            val newComment = comment.copy(id = nextCommentId++,
+////                postId = postId,
+////                date = (System.currentTimeMillis() / 1000).toInt()
+////            )
+//
+//
+//
+//            return newComment
+//        }
+//    }
 
 
 
@@ -133,6 +137,9 @@ interface Attachment {
     object WallService {
         private val posts = mutableListOf<Post>()
         private var nextId = 1
+        private var post = emptyArray<Post>()
+        private var comment = emptyArray<Comment>()
+        private var nextCommentId = 1
 
         fun add(post: Post): Post {
             val newPost = post.copy(id = nextId)
@@ -149,6 +156,22 @@ interface Attachment {
             return true
         }
 
+        fun createComment(postId: Int, comment: Comment): Comment {
+            val post = post.find{ it.id == postId} ?:
+            throw PostNoFoundException(postId)
+
+            val newComment = comment.copy(id = nextCommentId++,
+                postId = postId,
+                date = (System.currentTimeMillis() / 1000).toInt()
+            )
+
+
+
+            return newComment
+        }
+
+
+
         fun clear() {
             posts.clear()
             nextId = 1
@@ -157,15 +180,15 @@ interface Attachment {
     }
 
     fun main() {
-        val wallService = WallServiceTo()
+        //val wallService = WallServiceTo()
 
         val post = Post(
             1, 1, 1, 1, "a", 1,
             true, true, true, "A",
         )
-        val comment = Comment(0,1,1,"AAA", 0,null, null)
+        val comment = Comment(1,1,1,"AAA", 0,null, null)
 
-        try { val addedComment = wallService.createComment(1, comment)
+        try { val addedComment = createComment(1, comment)
             println("addedComment: $addedComment")
         }catch (e: PostNoFoundException){
             println(e.message)
