@@ -24,7 +24,7 @@ class WallServiceTest {
     fun add() {val post = Post(
         1, 1, 1, 1,
         "a", 1, true, true,
-        true, "a"
+        true, "A"
     )
 
         //val savedPost =

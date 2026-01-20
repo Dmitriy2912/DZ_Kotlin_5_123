@@ -157,15 +157,13 @@ interface Attachment {
         }
 
         fun createComment(postId: Int, comment: Comment): Comment {
-            val post = post.find{ it.id == postId} ?:
+            val post = posts.find{ it.id == postId} ?:
             throw PostNoFoundException(postId)
 
             val newComment = comment.copy(id = nextCommentId++,
                 postId = postId,
                 date = (System.currentTimeMillis() / 1000).toInt()
             )
-
-
 
             return newComment
         }
@@ -186,7 +184,7 @@ interface Attachment {
             1, 1, 1, 1, "a", 1,
             true, true, true, "A",
         )
-        val comment = Comment(1,1,1,"AAA", 0,null, null)
+        val comment = Comment(1,2,1,"AAA", 0,null, null)
 
         try { val addedComment = createComment(1, comment)
             println("addedComment: $addedComment")
