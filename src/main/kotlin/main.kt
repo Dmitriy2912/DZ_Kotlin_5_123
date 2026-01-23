@@ -1,7 +1,5 @@
 package ru.netology
 
-import ru.netology.Attachment.Comment
-import ru.netology.Attachment.Post
 import ru.netology.Attachment.WallService.createComment
 
 
@@ -62,17 +60,26 @@ interface Attachment {
         val photo100: String? = null,
         val photo130: String? = null
     )
+
+    data class Note(
+        val id: Int,
+        var text: String,
+        var isDeleted: Boolean = false
+    )
+
     data class Comment(
         val id: Int,
         val postId: Int,
         val fromId: Int,
-        val text: String,
+        var text: String,
         val date: Int,
+        var isDeleted: Boolean = false,
         val replyToComment: Int? = null,
-        val attachment: List<Attachment>? = null
+        val attachment: List<Attachment>? = null,
+        val noteId: Int
     )
     class PostNoFoundException(postId: Int):
-    RuntimeException("Post s ID=$postId ne nauden")
+        RuntimeException("Post s ID=$postId ne nauden")
 
 //    class WallServiceTo{
 //        private var post = emptyArray<Post>()
@@ -133,13 +140,29 @@ interface Attachment {
         val audio: Audio
     ) : Attachment
 
+    interface NoteService<T> {
+        fun add(note: T): T
+        fun createComment1(noteId: Int, comment: Comment): Comment
+        fun delete(noteId: Int)
+        fun deleteComment(commentId: Int)
+        fun edit(noteId: Int, note: T)
+        fun editComment(commentId: Int, comment: Comment)
+        fun get(): List<T>
+        fun getById(id: Int): T
+        fun getComments(noteId: Int): List<Comment>
+        fun restoreComment(commentId: Int)
+    }
 
-    object WallService {
+
+    object WallService : NoteService<Note>{
         private val posts = mutableListOf<Post>()
         private var nextId = 1
         private var post = emptyArray<Post>()
         private var comment = emptyArray<Comment>()
         private var nextCommentId = 1
+        private val notes: MutableList<Note> = mutableListOf()
+        private val comments: MutableList<Comment> = mutableListOf()
+        private var nextNoteId = 1
 
         fun add(post: Post): Post {
             val newPost = post.copy(id = nextId)
@@ -156,6 +179,11 @@ interface Attachment {
             return true
         }
 
+        override fun add(note: Note): Note {
+            val newNote = note.copy(id = nextNoteId++)
+            notes.add(newNote)
+            return newNote
+        }
         fun createComment(postId: Int, comment: Comment): Comment {
             val post = posts.find{ it.id == postId} ?:
             throw PostNoFoundException(postId)
@@ -168,6 +196,59 @@ interface Attachment {
             return newComment
         }
 
+        override fun createComment1(noteId: Int, comment: Comment): Comment {
+            val note = getById(noteId)
+            if (note.isDeleted) throw Exception("Cannot comment on deleted note")
+
+            val newComment = comment.copy(id = nextCommentId++, noteId = noteId)
+            comments.add(newComment)
+            return newComment
+        }
+
+        override fun delete(noteId: Int) {
+            val note = getById(noteId)
+            note.isDeleted = true
+            comments.filter { it.noteId == noteId }.forEach { it.isDeleted = true }
+        }
+
+        override fun deleteComment(commentId: Int) {
+            val comment = getCommentById(commentId)
+            if (comment.isDeleted) throw Exception("Comment already deleted")
+            comment.isDeleted = true
+        }
+
+        override fun edit(noteId: Int, note: Note) {
+            val currentNote = getById(noteId)
+            if (currentNote.isDeleted) throw Exception("Cannot edit deleted note")
+            currentNote.text = note.text
+        }
+
+        override fun editComment(commentId: Int, comment: Comment) {
+            val currentComment = getCommentById(commentId)
+            if (currentComment.isDeleted) throw Exception("Cannot edit deleted comment")
+            currentComment.text = comment.text
+        }
+
+        override fun get(): List<Note> = notes.filter {!it.isDeleted}
+
+        override fun getById(id: Int): Note {
+            return notes.find { it.id == id && !it.isDeleted }
+                ?: throw Exception("Note not found or already deleted")
+        }
+
+        override fun getComments(noteId: Int): List<Comment> =
+            comments.filter { it.noteId == noteId && !it.isDeleted }
+
+
+        override fun restoreComment(commentId: Int) {
+            val comment = getCommentById(commentId)
+            if (!comment.isDeleted) throw Exception("Comment is not deleted")
+            comment.isDeleted = false
+        }
+        private fun getCommentById(commentId: Int): Comment {
+            return comments.find { it.id == commentId }
+                ?: throw Exception("Comment not found")
+        }
 
 
         fun clear() {
@@ -184,7 +265,11 @@ interface Attachment {
             1, 1, 1, 1, "a", 1,
             true, true, true, "A",
         )
-        val comment = Comment(1,2,1,"AAA", 0,null, null)
+        val comment = Comment(
+            1, 2, 1, "AAA", 0,
+            false, null, null,1
+
+        )
 
         try { val addedComment = createComment(1, comment)
             println("addedComment: $addedComment")
@@ -212,7 +297,7 @@ interface Attachment {
             DocumentAttachment(document = document),
             LinkAttachment(link = link),
             AudioAttachment(audio = audio)
-            )
+        )
         println("Пост ID: ${post.id}")
         println("Текст: ${post.text}")
         println("Вложений: ${post.attachments?.size ?: 0}")

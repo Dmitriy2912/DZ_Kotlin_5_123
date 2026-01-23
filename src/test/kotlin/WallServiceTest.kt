@@ -8,9 +8,7 @@ import kotlin.test.assertTrue
 import ru.netology.Attachment.Comment
 import ru.netology.Attachment.WallService.createComment
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
-
-
+import kotlin.test.assertFailsWith
 
 
 class WallServiceTest {
@@ -35,7 +33,11 @@ class WallServiceTest {
             1,
             1,
             "AAA",
-            0
+            0,
+            false,
+            null,
+            null,
+            1
         )
         val addedComment = createComment(1, comment)
 
@@ -96,20 +98,26 @@ class WallServiceTest {
             11,
             11,
             "ADC",
+            1,
+            false,
+            null,
+            null,
             1
         )
-        assertFails {
-            createComment(11, comment)
+        assertFailsWith(Attachment.PostNoFoundException::class) {
+            createComment(1, comment)
         }
     }
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+
+
+
 
 
 
