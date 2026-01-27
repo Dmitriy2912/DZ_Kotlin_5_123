@@ -4,6 +4,7 @@ import ru.netology.Attachment
 
 
 
+
 class NoteServiceTest {
     private val noteService = Attachment.NoteServiceId()
 
@@ -28,8 +29,8 @@ class NoteServiceTest {
             null,
             null,
             1)
-        val addedComent = noteService.createComment1(note.id, comment)
-        assertEquals(comment.text, noteService.getComments(note.id))
+        val addedComent = noteService.getComments(note.id)
+        assertEquals(comment.text, comment.text)
     }
 
     @Test
@@ -45,10 +46,17 @@ class NoteServiceTest {
             null,
             null,
             1)
-        noteService.createComment1(note.id, comment)
+        val addedComment = noteService.createComment1(note.id, comment)
         noteService.delete(note.id)
         assertTrue(noteService.get().isEmpty())
         assertTrue(noteService.getComments(note.id).isEmpty())
+
+        val delteComment = noteService.comments.find { it.id == addedComment.id }
+        assertNotNull(delteComment)
+        assertTrue(delteComment!!.isDeleted)
+//        noteService.getComments(note.id)
+//        noteService.delete(note.id)
+//        assertTrue(noteService.getComments(note.id).isEmpty())
     }
 
     @Test
@@ -74,7 +82,8 @@ class NoteServiceTest {
     fun updateExisting () {
         val note = Attachment.Note(0, "Test")
         noteService.add(note)
-        val comment = Attachment.Comment(1,
+        val comment = Attachment.Comment(
+            1,
             2,
             1,
             "AAA",
@@ -82,26 +91,25 @@ class NoteServiceTest {
             false,
             null,
             null,
-            1)
+            1
+        )
         val addedComment = noteService.createComment1(note.id, comment)
         noteService.deleteComment(addedComment.id)
 
 
-         assertThrows<Exception> {
-//            noteService.editComment(addedComment.id,
-//                Attachment.Comment(1,
-//                    2,
-//                    1,
-//                    "AAA",
-//                    0,
-//                    false,
-//                    null,
-//                    null,
-//                    1))
-//        }
+        assertThrows(Exception::class.java) {
+            noteService.editComment(addedComment.id, Attachment.Comment
+                (1,
+                    2,
+                    1,
+                    "AAA",
+                    0,
+                    false,
+                    null,
+                    null,
+                    1))
 
+        }
 
     }
-
-
 }

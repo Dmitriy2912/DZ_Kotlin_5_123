@@ -157,7 +157,7 @@ interface Attachment {
     }
 class NoteServiceId : NoteService<Note> {
     private val notes : MutableList<Note> = mutableListOf()
-    private val comments : MutableList<Comment> = mutableListOf()
+    val comments : MutableList<Comment> = mutableListOf()
     private var nextCommentId = 1
     private var nextNoteId = 1
 
@@ -173,7 +173,7 @@ class NoteServiceId : NoteService<Note> {
         val note = getById(noteId)
         if (note.isDeleted) throw Exception("Cannot comment on deleted note")
 
-        val newComment = comment.copy(id = nextCommentId++, noteId = noteId)
+        val newComment = comment.copy(id = nextCommentId++, noteId = noteId, isDeleted = false)
         comments.add(newComment)
         return newComment
     }
