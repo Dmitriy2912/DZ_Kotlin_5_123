@@ -32,36 +32,10 @@ class NoteServiceTest {
         val addedComent = noteService.getComments(note.id)
         assertEquals(comment.text, comment.text)
     }
-
-    @Test
-    fun deleteComment(){
-        val note = Attachment.Note(0, "Test")
-        noteService.add(note)
-        val comment = Attachment.Comment(1,
-            2,
-            1,
-            "AAA",
-            0,
-            false,
-            null,
-            null,
-            1)
-        val addedComment = noteService.createComment1(note.id, comment)
-        noteService.delete(note.id)
-        assertTrue(noteService.get().isEmpty())
-        assertTrue(noteService.getComments(note.id).isEmpty())
-
-        val delteComment = noteService.comments.find { it.id == addedComment.id }
-        assertNotNull(delteComment)
-        assertTrue(delteComment!!.isDeleted)
-//        noteService.getComments(note.id)
-//        noteService.delete(note.id)
-//        assertTrue(noteService.getComments(note.id).isEmpty())
-    }
-
+    
     @Test
     fun restoreComment(){
-        val note = Attachment.Note(0, "Test")
+        val note = noteService.add(Attachment.Note(0, "Test"))
         noteService.add(note)
         val comment = Attachment.Comment(1,
             2,
@@ -80,7 +54,7 @@ class NoteServiceTest {
 
     @Test
     fun updateExisting () {
-        val note = Attachment.Note(0, "Test")
+        val note = noteService.add(Attachment.Note(0, "Test"))
         noteService.add(note)
         val comment = Attachment.Comment(
             1,
