@@ -1,6 +1,9 @@
 package ru.netology
 
 import ru.netology.Attachment.WallService.createComment
+import kotlin.collections.mutableListOf
+
+
 
 
 interface Attachment {
@@ -141,6 +144,119 @@ interface Attachment {
         override val type: String = "audio",
         val audio: Audio
     ) : Attachment
+
+    data class Message (
+        val id: Int,
+        val chatId: Int,
+        val senderId: Int,
+        var text: String,
+        var chetator: Boolean = false,
+        val timestamp: Long = System.currentTimeMillis()
+    )
+
+
+
+    data class Chat(
+        val id: Int,
+        val senderUserId: Int,
+        val recipientUserId: Int,
+        var lastMessage: String = "no messages",
+        var unreadCount: Int = 0,
+        var lastActivity: Long = System.currentTimeMillis()
+    )
+
+    class ChatService{
+        val chats = mutableMapOf<Int, Chat>()
+        val messages = mutableMapOf<Int, MutableList<Message>>()
+
+
+        fun createChat(senderUserId: Int, recipientUserId: Int): Chat{
+            val id = generateId()
+            val chat = Chat(id, senderUserId, recipientUserId)
+            chats[id] = chat
+            messages[id] = mutableListOf()
+            return chat
+        }
+        fun getChat(userId: Int): List<Chat> = chats.values.filter()
+        { it.senderUserId == userId || it.recipientUserId == userId }
+            .sortedByDescending { it.lastActivity }
+
+        fun getUnreadChatsCount(userId: Int): Int = getChat(userId).count{ it.unreadCount > 0}
+
+        fun deleteChat(chatId: Int): Boolean{
+            if (chats.remove(chatId) == null) return false
+            messages.remove(chatId)
+            return true
+        }
+
+        private fun generateId() =
+            (chats.keys.maxOrNull() ?: 0) + 1
+    }
+
+    class MessageService(private val chatService: ChatService){
+
+        fun sendMessage(senderId: Int, receiverId: Int, text: String): Message? {
+            val chat = findOrCreateChat(senderId, receiverId)
+            val message = Message(
+                generateMessageId(),
+                chat.id,
+                senderId,
+                text
+            )
+            chatService.messages[chat.id]?.add(message)
+
+            chat.lastMessage = text
+            chat.unreadCount++
+            chat.lastActivity = message.timestamp
+
+            return message
+        }
+
+        fun getLastMessages(userId: Int): Map<Int, String> =chatService.getChat(userId).associate { it.id to it.lastMessage }
+
+        fun getMessages(chatId: Int, limit: Int): List<Message>{
+            val mList = chatService.messages[chatId] ?: return emptyList()
+
+            val result = mList.takeLast(limit).toList()
+
+            result.forEach  { it.chetator = true }
+
+            val chat = chatService.chats[chatId]
+            chat?.unreadCount = mList.count{ it.chetator }
+
+            return result
+        }
+
+        fun editMessage(messegeId: Int, newText: String): Boolean{
+            val message = findMessageById(messegeId) ?: return false
+            message.text = newText
+            val chat = chatService.chats[message.chatId]
+            chat?.lastMessage = newText
+            return true
+        }
+
+        fun deleteMessage(messegeId: Int): Boolean {
+            val message = findMessageById(messegeId) ?: return false
+            val mList = chatService.messages[message.chatId] ?: return false
+            mList.remove(message)
+            return true
+        }
+
+        private fun findOrCreateChat (senderId: Int, receiverId: Int): Chat{
+            val chat = chatService.chats.values.find {
+                (it.senderUserId == senderId && it.recipientUserId == receiverId)  ||
+                (it.senderUserId == receiverId && it.recipientUserId == senderId)
+            }
+            return  chat ?: chatService.createChat(senderId, receiverId)
+        }
+
+        private fun findMessageById(messegeId: Int): Message? = chatService.messages.values.flatMap { it }
+            .find { it.id == messegeId }
+
+        private fun generateMessageId() = (chatService.messages.values.flatMap {  it.map { it.id }}.maxOrNull() ?: 0) + 1
+
+    }
+
 
     interface NoteService<T> {
         fun add(note: T): T
@@ -342,6 +458,15 @@ class NoteServiceId : NoteService<Note> {
             1, 1, 1, 1, "a", 1,
             true, true, true, "A",
         )
+        //урок
+        val short = ::liked
+        val full: (Post) -> Boolean = ::liked
+        println(short == full)
+        println(short === full)
+
+
+
+
         val comment = Comment(
             1, 2, 1, "AAA", 0,
             false, null, null,1
@@ -389,11 +514,28 @@ class NoteServiceId : NoteService<Note> {
             }
         }
 
+        // Урок
+        val list = mutableListOf(1, 2, 3)
+        println(list)
+        list.swap(0,2)
+        println(list)
 
 
-
-
-
-
+        val strList = mutableListOf("One", "Two", "Three")
+        println(strList)
+        strList.swap(0,2)
+        println(strList)
     }
+
+
+
+    fun <E> MutableList<E>.swap(index1: Int, index2: Int){
+        val e1 = this[index1]
+        val e2 = this[index2]
+        this[index1] = e2
+        this[index2] = e1
+    }
+    fun liked(post: Post) = post.likes > 0
+
+
 }

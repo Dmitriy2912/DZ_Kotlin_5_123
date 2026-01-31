@@ -32,7 +32,7 @@ class NoteServiceTest {
         val addedComent = noteService.getComments(note.id)
         assertEquals(comment.text, comment.text)
     }
-    
+
     @Test
     fun restoreComment(){
         val note = noteService.add(Attachment.Note(0, "Test"))
