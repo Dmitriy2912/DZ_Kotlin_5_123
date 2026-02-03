@@ -1,10 +1,10 @@
 package ru.netology
 
+import com.sun.org.apache.xml.internal.serializer.utils.Messages
+import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import ru.netology.Attachment.WallService.createComment
-import kotlin.collections.mutableListOf
 
-
-
+private
 
 interface Attachment {
 
@@ -177,16 +177,18 @@ interface Attachment {
             messages[id] = mutableListOf()
             return chat
         }
-        fun getChat(userId: Int): List<Chat> = chats.values.filter()
-        { it.senderUserId == userId || it.recipientUserId == userId }
+        fun getChat(userId: Int): List<Chat> = chats.values
+            .asSequence()
+            .filter(){ it.senderUserId == userId || it.recipientUserId == userId }
             .sortedByDescending { it.lastActivity }
+            .toList()
 
-        fun getUnreadChatsCount(userId: Int): Int = getChat(userId).count{ it.unreadCount > 0}
+        fun getUnreadChatsCount(userId: Int): Int = getChat(userId)
+            .asSequence()
+            .count{ it.unreadCount > 0}
 
-        fun deleteChat(chatId: Int): Boolean{
-            if (chats.remove(chatId) == null) return false
-            messages.remove(chatId)
-            return true
+        fun deleteChat(chatId: Int): Boolean {
+            return chats.remove(chatId) != null && messages.remove(chatId) != null
         }
 
         private fun generateId() =
@@ -212,12 +214,19 @@ interface Attachment {
             return message
         }
 
-        fun getLastMessages(userId: Int): Map<Int, String> =chatService.getChat(userId).associate { it.id to it.lastMessage }
+        fun getLastMessages(userId: Int): Map<Int, String> =chatService.getChat(userId)
+            .asSequence()
+            .map { chat -> chat.id to chat.lastMessage }
+            .toMap()
+
 
         fun getMessages(chatId: Int, limit: Int): List<Message>{
             val mList = chatService.messages[chatId] ?: return emptyList()
 
-            val result = mList.takeLast(limit).toList()
+            val result = mList
+                .asSequence()
+                .filter { !it.chetator }
+                .toList()
 
             result.forEach  { it.chetator = true }
 
@@ -250,10 +259,13 @@ interface Attachment {
             return  chat ?: chatService.createChat(senderId, receiverId)
         }
 
-        private fun findMessageById(messegeId: Int): Message? = chatService.messages.values.flatMap { it }
+        private fun findMessageById(messegeId: Int): Message? = chatService.messages.values
+            .asSequence()
+            .flatMap { it.asSequence() }
             .find { it.id == messegeId }
 
-        private fun generateMessageId() = (chatService.messages.values.flatMap {  it.map { it.id }}.maxOrNull() ?: 0) + 1
+        private fun generateMessageId() = (chatService.messages.values
+            .flatMap {  it.map { it.id }}.maxOrNull() ?: 0) + 1
 
     }
 
@@ -539,3 +551,5 @@ class NoteServiceId : NoteService<Note> {
 
 
 }
+
+
